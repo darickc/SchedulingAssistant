@@ -1,0 +1,85 @@
+<\!DOCTYPE html>
+<html>
+<head><title>Create Assets</title></head>
+<body>
+<canvas id="canvas" width="1024" height="1024"></canvas>
+<script>
+// Create 1024x1024 app icon
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+// Create app icon (blue gradient)
+ctx.fillStyle = '#007AFF';
+ctx.fillRect(0, 0, 1024, 1024);
+ctx.fillStyle = '#5856D6';
+ctx.fillRect(200, 200, 624, 624);
+ctx.fillStyle = 'white';
+ctx.font = 'bold 200px Arial';
+ctx.textAlign = 'center';
+ctx.fillText('SA', 512, 600);
+
+// Convert to blob and download
+canvas.toBlob(blob => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'icon.png';
+  a.click();
+});
+
+// Create splash screen (1024x1024)
+setTimeout(() => {
+  ctx.fillStyle = '#F2F2F7';
+  ctx.fillRect(0, 0, 1024, 1024);
+  ctx.fillStyle = '#007AFF';
+  ctx.font = 'bold 120px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('Scheduling', 512, 450);
+  ctx.fillText('Assistant', 512, 600);
+  
+  canvas.toBlob(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'splash.png';
+    a.click();
+  });
+}, 1000);
+
+// Create adaptive icon (1024x1024)
+setTimeout(() => {
+  ctx.fillStyle = '#007AFF';
+  ctx.fillRect(0, 0, 1024, 1024);
+  ctx.fillStyle = 'white';
+  ctx.font = 'bold 300px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('SA', 512, 600);
+  
+  canvas.toBlob(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'adaptive-icon.png';
+    a.click();
+  });
+}, 2000);
+
+// Create favicon (512x512)
+setTimeout(() => {
+  canvas.width = 512;
+  canvas.height = 512;
+  ctx.fillStyle = '#007AFF';
+  ctx.fillRect(0, 0, 512, 512);
+  ctx.fillStyle = 'white';
+  ctx.font = 'bold 150px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('SA', 256, 300);
+  
+  canvas.toBlob(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'favicon.png';
+    a.click();
+  });
+}, 3000);
+</script>
+</body>
+</html>
+EOF < /dev/null
