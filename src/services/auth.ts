@@ -57,8 +57,8 @@ export class AuthService {
    */
   static async signIn(): Promise<GoogleUser> {
     try {
-      const [request, response, promptAsync] = Google.useAuthRequest({
-        ...this.config,
+      const request = new Google.GoogleAuthRequest({
+        clientId: this.getClientId(),
         scopes: [
           'openid',
           'profile',
@@ -68,11 +68,7 @@ export class AuthService {
         ],
       });
 
-      if (!request) {
-        throw new Error('Failed to create authentication request');
-      }
-
-      const result = await promptAsync();
+      const result = await request.promptAsync();
 
       if (result.type === 'success' && result.authentication) {
         const { accessToken, refreshToken, expiresIn } = result.authentication;
