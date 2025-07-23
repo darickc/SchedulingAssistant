@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Scheduling Assistant",
+    "slug": "scheduling-assistant",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.schedulingassistant.app",
+      "infoPlist": {
+        "NSContactsUsageDescription": "This app needs access to your contacts to help you schedule appointments.",
+        "NSCalendarsUsageDescription": "This app needs access to your calendar to create and manage appointments."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.schedulingassistant.app",
+      "permissions": [
+        "READ_CONTACTS",
+        "READ_SMS",
+        "SEND_SMS",
+        "READ_CALENDAR",
+        "WRITE_CALENDAR"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-sqlite"
+    ]
+  }
+}
