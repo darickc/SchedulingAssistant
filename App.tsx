@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import MainNavigator from '@/navigation/MainNavigator';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -48,10 +49,10 @@ export default function App() {
   }
 
   return (
-    <>
+    <AuthProvider>
       <MainNavigator />
       <StatusBar style="auto" />
-    </>
+    </AuthProvider>
   );
 }
 

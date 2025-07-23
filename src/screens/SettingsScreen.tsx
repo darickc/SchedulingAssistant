@@ -4,6 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MainTabScreenProps } from '@/types/navigation';
 import { Colors, Spacing, FontSizes } from '@/constants';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useAuth } from '@/contexts/AuthContext';
+import { UserProfile } from '@/components/UserProfile';
+import { SignInButton } from '@/components/SignInButton';
 
 type Props = MainTabScreenProps<'Settings'>;
 
@@ -16,15 +19,20 @@ interface SettingItem {
 }
 
 const SettingsScreen: React.FC<Props> = ({ navigation }) => {
+  const { isSignedIn, user, signOut } = useAuth();
+
   const handleSignOut = () => {
     Alert.alert(
       'Sign Out',
       'Are you sure you want to sign out?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign Out', style: 'destructive', onPress: () => {
-          // TODO: Implement sign out logic
-          console.log('Signing out...');
+        { text: 'Sign Out', style: 'destructive', onPress: async () => {
+          try {
+            await signOut();
+          } catch (error) {
+            Alert.alert('Error', 'Failed to sign out. Please try again.');
+          }
         }},
       ]
     );
@@ -88,23 +96,20 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     },
     {
       title: 'Account',
-      items: [
+      items: isSignedIn ? [
         {
           title: 'Google Account',
-          subtitle: 'Not connected',
+          subtitle: user?.email || 'Connected',
           icon: 'logo-google',
-          onPress: () => {
-            // TODO: Implement Google sign-in
-            Alert.alert('Google Sign-In', 'Connect your Google account');
-          },
-          showArrow: true,
+          onPress: () => {},
+          showArrow: false,
         },
         {
           title: 'Sign Out',
           icon: 'log-out',
           onPress: handleSignOut,
         },
-      ],
+      ] : [],
     },
     {
       title: 'About',
@@ -164,13 +169,30 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.title}>Settings</Text>
         
-        {settingSections.map((section) => (
-          <View key={section.title} style={styles.section}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
-            <View style={styles.sectionContent}>
-              {section.items.map(renderSettingItem)}
-            </View>
+        {/* User Profile Section */}
+        {isSignedIn && user && (
+          <View style={styles.profileSection}>
+            <UserProfile showSignOut={false} />
           </View>
+        )}
+        
+        {/* Sign In Section */}
+        {!isSignedIn && (
+          <View style={styles.signInSection}>
+            <Text style={styles.signInTitle}>Sign in to enable calendar features</Text>
+            <SignInButton />
+          </View>
+        )}
+        
+        {settingSections.map((section) => (
+          section.items.length > 0 && (
+            <View key={section.title} style={styles.section}>
+              <Text style={styles.sectionTitle}>{section.title}</Text>
+              <View style={styles.sectionContent}>
+                {section.items.map(renderSettingItem)}
+              </View>
+            </View>
+          )
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -237,6 +259,24 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.sm,
     color: Colors.textSecondary,
     marginTop: 2,
+  },
+  profileSection: {
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  signInSection: {
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.lg,
+    padding: Spacing.lg,
+    backgroundColor: Colors.surface,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  signInTitle: {
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: Spacing.md,
   },
 });
 

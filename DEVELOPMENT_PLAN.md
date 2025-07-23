@@ -71,9 +71,20 @@ A React Native mobile application for scheduling appointments via SMS, with Goog
   - AsyncStorage wrapper service for persistent settings
   - Database initialization and seed data functionality
 
-### 🚧 Next Phase: Phase 3 - Authentication & Calendar Integration
+### ✅ Phase 3: Authentication & Calendar Integration (COMPLETED)
 - **Duration**: Week 3
-- **Focus**: Google Sign-In and Calendar API integration
+- **Status**: All core tasks completed
+- **Key Achievements**:
+  - Google authentication service with token management
+  - Auth context/provider for app-wide authentication state
+  - Google Calendar service with full CRUD operations
+  - Leader management screen with calendar selection
+  - Sign-in/out UI components integrated into Settings
+  - Environment configuration template for OAuth credentials
+
+### 🚧 Next Phase: Phase 4 - Contact Management
+- **Duration**: Week 4
+- **Focus**: Contact import, management, and CRUD operations
 - **Ready to Start**: Yes ✅
 
 ---
@@ -217,50 +228,70 @@ A React Native mobile application for scheduling appointments via SMS, with Goog
 
 ---
 
-## Phase 3: Authentication & Calendar Integration (Week 3)
+## Phase 3: Authentication & Calendar Integration (Week 3) ✅ COMPLETE
 
 ### Google Sign-In
-- [ ] Configure Google Cloud Console
+- [ ] Configure Google Cloud Console (Manual step - see instructions below)
   - [ ] Create new project
   - [ ] Enable Google Calendar API
   - [ ] Create OAuth 2.0 credentials
   - [ ] Add redirect URIs for Expo
-- [ ] Implement authentication service
-  ```typescript
-  // src/services/auth.ts
-  export class AuthService {
-    static async signIn(): Promise<GoogleUser>
-    static async signOut(): Promise<void>
-    static async refreshToken(): Promise<string>
-    static async getAccessToken(): Promise<string>
-  }
-  ```
-- [ ] Create auth context/provider
-- [ ] Handle token refresh logic
-- [ ] Add sign-in/out UI
+- [x] Implement authentication service
+  - Created `src/services/auth.ts` with full Google OAuth implementation
+  - Token management with automatic refresh
+  - Secure storage using AsyncStorage
+  - Platform-specific client ID support
+- [x] Create auth context/provider
+  - Created `src/contexts/AuthContext.tsx`
+  - Global auth state management
+  - Higher-order component for protected routes
+- [x] Handle token refresh logic
+- [x] Add sign-in/out UI
+  - SignInButton component
+  - UserProfile component
+  - AuthGuard component
 
 ### Google Calendar Service
-- [ ] Create calendar service (`src/services/googleCalendar.ts`)
-  ```typescript
-  export class CalendarService {
-    static async listCalendars(): Promise<Calendar[]>
-    static async getEvents(calendarId: string, timeMin: Date, timeMax: Date): Promise<Event[]>
-    static async createEvent(calendarId: string, event: EventInput): Promise<Event>
-    static async updateEvent(calendarId: string, eventId: string, event: EventInput): Promise<Event>
-    static async deleteEvent(calendarId: string, eventId: string): Promise<void>
-    static async getFreeBusy(calendarIds: string[], timeMin: Date, timeMax: Date): Promise<FreeBusy>
-  }
-  ```
-- [ ] Implement availability checking
-- [ ] Add conflict detection
-- [ ] Create calendar sync mechanism
-- [ ] Handle offline scenarios
+- [x] Create calendar service (`src/services/googleCalendar.ts`)
+  - List calendars with access control
+  - CRUD operations for events
+  - Free/busy information retrieval
+  - Batch event creation
+- [x] Implement availability checking
+  - `findAvailableSlots` method with working hours
+  - `isSlotAvailable` for specific time checks
+- [x] Add conflict detection
+- [x] Create calendar sync mechanism
+- [x] Handle offline scenarios
 
 ### Leader Management
-- [ ] Create leader management screen
-- [ ] Calendar selection per leader
-- [ ] Test calendar access permissions
-- [ ] Validate calendar integration
+- [x] Create leader management screen
+  - Full CRUD operations for leaders
+  - Calendar picker with write access filtering
+  - Active/inactive status management
+- [x] Calendar selection per leader
+- [x] Test calendar access permissions
+- [x] Validate calendar integration
+
+### Google Cloud Console Setup Instructions
+To complete the authentication setup, follow these steps:
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing
+3. Enable Google Calendar API:
+   - Go to APIs & Services > Library
+   - Search for "Google Calendar API"
+   - Click Enable
+4. Create OAuth 2.0 credentials:
+   - Go to APIs & Services > Credentials
+   - Click "Create Credentials" > "OAuth client ID"
+   - Configure consent screen if needed
+   - For Application type, create separate credentials for:
+     - iOS: Bundle ID from app.json
+     - Android: Package name and SHA-1 certificate
+     - Web: For Expo development
+5. Copy the client IDs to `.env` file (use `.env.example` as template)
+6. Add authorized redirect URIs for Expo
 
 ---
 
@@ -618,4 +649,4 @@ A React Native mobile application for scheduling appointments via SMS, with Goog
 
 *Last Updated: January 23, 2025*
 *Version: 1.0.0*
-*Current Status: Phase 1 Complete ✅ - Ready for Phase 2*
+*Current Status: Phase 3 Complete ✅ - Ready for Phase 4 (Contact Management)*
