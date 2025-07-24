@@ -45,7 +45,7 @@ const ScheduleAppointmentScreen: React.FC<Props> = ({ route, navigation }) => {
   const [selectedTemplate, setSelectedTemplate] = useState<MessageTemplate | null>(null);
   
   const contact = contacts.find(c => c.id === contactId);
-  const activeLeaders = leaders.filter(l => l.is_active);
+  const activeLeaders = leaders.filter(l => l.isActive);
 
   useEffect(() => {
     if (selectedType) {
@@ -67,11 +67,12 @@ const ScheduleAppointmentScreen: React.FC<Props> = ({ route, navigation }) => {
         selectedTemplate,
         {
           id: 0,
-          contact_id: contact.id!,
-          leader_id: selectedLeader.id!,
-          type_id: selectedType.id!,
-          scheduled_time: selectedSlot.start.toISOString(),
+          contactId: contact.id!,
+          leaderId: selectedLeader.id!,
+          typeId: selectedType.id!,
+          scheduledTime: selectedSlot.start,
           status: 'pending',
+          createdAt: new Date(),
         },
         contact,
         selectedLeader,
@@ -93,7 +94,7 @@ const ScheduleAppointmentScreen: React.FC<Props> = ({ route, navigation }) => {
       const slots = await SchedulingService.findAvailableSlots(
         selectedLeader.id!,
         selectedLeader,
-        selectedType.duration_minutes,
+        selectedType.durationMinutes,
         { start: startDate, end: endDate }
       );
       
@@ -121,17 +122,17 @@ const ScheduleAppointmentScreen: React.FC<Props> = ({ route, navigation }) => {
     try {
       // Create appointment in local database
       const appointment = await addAppointment({
-        contact_id: contact.id!,
-        leader_id: selectedLeader.id!,
-        type_id: selectedType.id!,
-        scheduled_time: selectedSlot.start.toISOString(),
+        contactId: contact.id!,
+        leaderId: selectedLeader.id!,
+        typeId: selectedType.id!,
+        scheduledTime: selectedSlot.start,
         status: 'pending',
       });
 
       // Create Google Calendar event
       try {
         const event = await GoogleCalendarService.createEvent(
-          selectedLeader.calendar_id,
+          selectedLeader.calendarId,
           {
             summary: `${selectedType.name} - ${contact.name}`,
             description: `Appointment with ${contact.name}\nPhone: ${contact.phone}${contact.email ? `\nEmail: ${contact.email}` : ''}${contact.notes ? `\nNotes: ${contact.notes}` : ''}`,
@@ -145,7 +146,7 @@ const ScheduleAppointmentScreen: React.FC<Props> = ({ route, navigation }) => {
         if (event.id && appointment.id) {
           await addAppointment({
             ...appointment,
-            google_event_id: event.id,
+            googleEventId: event.id,
           });
         }
       } catch (calendarError) {
@@ -243,7 +244,7 @@ const ScheduleAppointmentScreen: React.FC<Props> = ({ route, navigation }) => {
           />
           <ListItem.Content>
             <ListItem.Title>{type.name}</ListItem.Title>
-            <ListItem.Subtitle>{type.duration_minutes} minutes</ListItem.Subtitle>
+            <ListItem.Subtitle>{type.durationMinutes} minutes</ListItem.Subtitle>
           </ListItem.Content>
           <ListItem.Chevron />
         </ListItem>
@@ -374,7 +375,7 @@ const ScheduleAppointmentScreen: React.FC<Props> = ({ route, navigation }) => {
         
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Duration:</Text>
-          <Text style={styles.summaryValue}>{selectedType?.duration_minutes} minutes</Text>
+          <Text style={styles.summaryValue}>{selectedType?.durationMinutes} minutes</Text>
         </View>
       </Card>
       

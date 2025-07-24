@@ -62,6 +62,12 @@ export interface TimeSlot {
   start: Date;
   end: Date;
   available: boolean;
+  score?: number;
+}
+
+export interface DateRange {
+  start: Date;
+  end: Date;
 }
 
 export interface AvailabilityRequest {
@@ -80,6 +86,12 @@ export interface SchedulingPreferences {
   workingDays: number[]; // 0-6, where 0 is Sunday
   bufferMinutes: number; // Minutes between appointments
   timezone: string;
+  preferredTimes?: {
+    start: string;
+    end: string;
+    daysOfWeek: number[];
+  };
+  preferredDays?: number[];
 }
 
 // CSV import types
@@ -99,9 +111,10 @@ export interface ContactImportResult {
 
 // Message template types
 export interface MessageTemplate {
-  appointmentType: string;
+  id?: number;
+  name: string;
   template: string;
-  variables: string[];
+  variables?: string[]; // Auto-extracted from template
 }
 
 export interface MessageVariables {

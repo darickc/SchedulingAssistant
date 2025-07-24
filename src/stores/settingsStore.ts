@@ -12,6 +12,7 @@ interface SettingsState {
   settings: AppSettings;
   leaders: Leader[];
   appointmentTypes: AppointmentType[];
+  messageTemplates: MessageTemplate[];
   loading: boolean;
   error: string | null;
   initialized: boolean;
@@ -43,8 +44,10 @@ interface SettingsActions {
   
   // Message templates
   updateMessageTemplates: (templates: MessageTemplate[]) => Promise<void>;
-  addMessageTemplate: (template: MessageTemplate) => Promise<void>;
-  removeMessageTemplate: (appointmentType: string) => Promise<void>;
+  addMessageTemplate: (template: Omit<MessageTemplate, 'id'>) => Promise<void>;
+  updateMessageTemplate: (id: number, updates: Partial<Omit<MessageTemplate, 'id'>>) => Promise<void>;
+  deleteMessageTemplate: (id: number) => Promise<void>;
+  getMessageTemplateById: (id: number) => MessageTemplate | undefined;
   
   // Utility
   getLeaderById: (id: number) => Leader | undefined;
@@ -68,19 +71,19 @@ const defaultSchedulingPreferences: SchedulingPreferences = {
 
 const defaultMessageTemplates: MessageTemplate[] = [
   {
-    appointmentType: 'Generic Meeting',
+    id: 1,
+    name: 'Generic Meeting',
     template: 'Brother/Sister {name}, can you meet with {leader} this {day} at {time}?',
-    variables: ['name', 'leader', 'day', 'time']
   },
   {
-    appointmentType: 'Temple Recommend Interview',
+    id: 2,
+    name: 'Temple Recommend Interview',
     template: 'Brother/Sister {name}, your temple recommend has expired or is about to expire. Can you meet with {leader} for a temple recommend interview this {day} at {time}?',
-    variables: ['name', 'leader', 'day', 'time']
   },
   {
-    appointmentType: 'Calling Interview',
+    id: 3,
+    name: 'Calling Interview',
     template: 'Brother/Sister {name}, can you meet with {leader} this {day} at {time} to discuss a calling opportunity?',
-    variables: ['name', 'leader', 'day', 'time']
   }
 ];
 
@@ -102,6 +105,7 @@ const initialState: SettingsState = {
   settings: defaultSettings,
   leaders: [],
   appointmentTypes: [],
+  messageTemplates: defaultMessageTemplates,
   loading: false,
   error: null,
   initialized: false,
@@ -404,39 +408,40 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   // Message templates
   updateMessageTemplates: async (templates: MessageTemplate[]) => {
-    const { settings } = get();
-    const updatedSettings = {
-      ...settings,
-      messageTemplates: templates
-    };
-    
-    set({ settings: updatedSettings });
+    set({ messageTemplates: templates });
     
     // Save to storage
     // await StorageService.saveSettings(updatedSettings);
   },
 
-  addMessageTemplate: async (template: MessageTemplate) => {
-    const { settings } = get();
-    const existingIndex = settings.messageTemplates.findIndex(t => t.appointmentType === template.appointmentType);
+  addMessageTemplate: async (templateInput: Omit<MessageTemplate, 'id'>) => {
+    const { messageTemplates } = get();
+    const newId = Math.max(0, ...messageTemplates.map(t => t.id || 0)) + 1;
+    const newTemplate: MessageTemplate = {
+      ...templateInput,
+      id: newId,
+    };
     
-    let updatedTemplates;
-    if (existingIndex >= 0) {
-      // Replace existing template
-      updatedTemplates = [...settings.messageTemplates];
-      updatedTemplates[existingIndex] = template;
-    } else {
-      // Add new template
-      updatedTemplates = [...settings.messageTemplates, template];
-    }
-    
-    await get().updateMessageTemplates(updatedTemplates);
+    const updatedTemplates = [...messageTemplates, newTemplate];
+    set({ messageTemplates: updatedTemplates });
   },
 
-  removeMessageTemplate: async (appointmentType: string) => {
-    const { settings } = get();
-    const updatedTemplates = settings.messageTemplates.filter(t => t.appointmentType !== appointmentType);
-    await get().updateMessageTemplates(updatedTemplates);
+  updateMessageTemplate: async (id: number, updates: Partial<Omit<MessageTemplate, 'id'>>) => {
+    const { messageTemplates } = get();
+    const updatedTemplates = messageTemplates.map(template =>
+      template.id === id ? { ...template, ...updates } : template
+    );
+    set({ messageTemplates: updatedTemplates });
+  },
+
+  deleteMessageTemplate: async (id: number) => {
+    const { messageTemplates } = get();
+    const updatedTemplates = messageTemplates.filter(template => template.id !== id);
+    set({ messageTemplates: updatedTemplates });
+  },
+
+  getMessageTemplateById: (id: number) => {
+    return get().messageTemplates.find(template => template.id === id);
   },
 
   // Utility

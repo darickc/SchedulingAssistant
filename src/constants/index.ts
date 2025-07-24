@@ -35,32 +35,56 @@ export const FontSizes = {
   xxl: 32,
 };
 
-export const DefaultTemplates = [
+export const defaultMessageTemplates = [
   {
     name: 'Generic Meeting',
-    duration: 15,
+    template: 'Brother/Sister {name}, can you meet with {leader} this {day} at {time}?',
+  },
+  {
+    name: 'Temple Recommend Interview',
+    template: 'Brother/Sister {name}, your temple recommend has expired or is about to expire. Can you meet with {leader} for a temple recommend interview this {day} at {time}?',
+  },
+  {
+    name: 'Ministering Interview',
+    template: 'Brother/Sister {name}, {leader} would like to meet with you for a ministering interview. Are you available this {day} at {time}?',
+  },
+  {
+    name: 'Youth Interview',
+    template: 'Hi {name}, {leader} would like to meet with you for a youth interview. Can you come this {day} at {time}?',
+  },
+  {
+    name: 'Calling Interview',
+    template: 'Brother/Sister {name}, can you meet with {leader} this {day} at {time} to discuss a calling opportunity?',
+  },
+  {
+    name: 'Tithing Settlement',
+    template: 'Brother/Sister {name}, it\'s time for your annual tithing settlement. Can you meet with {leader} this {day} at {time}?',
+  },
+];
+
+export const DefaultAppointmentTypes = [
+  {
+    name: 'Generic Meeting',
+    durationMinutes: 15,
     template: 'Brother/Sister {name}, can you meet with {leader} this {day} at {time}?',
     color: Colors.primary,
   },
   {
     name: 'Temple Recommend Interview',
-    duration: 10,
-    template:
-      'Brother/Sister {name}, your temple recommend has expired or is about to expire. Can you meet with {leader} for a temple recommend interview this {day} at {time}?',
+    durationMinutes: 10,
+    template: 'Brother/Sister {name}, your temple recommend has expired or is about to expire. Can you meet with {leader} for a temple recommend interview this {day} at {time}?',
     color: Colors.success,
   },
   {
     name: 'Ministering Interview',
-    duration: 20,
-    template:
-      'Brother/Sister {name}, {leader} would like to meet with you for a ministering interview. Are you available this {day} at {time}?',
+    durationMinutes: 20,
+    template: 'Brother/Sister {name}, {leader} would like to meet with you for a ministering interview. Are you available this {day} at {time}?',
     color: Colors.info,
   },
   {
     name: 'Youth Interview',
-    duration: 15,
-    template:
-      'Hi {name}, {leader} would like to meet with you for a youth interview. Can you come this {day} at {time}?',
+    durationMinutes: 15,
+    template: 'Hi {name}, {leader} would like to meet with you for a youth interview. Can you come this {day} at {time}?',
     color: Colors.secondary,
   },
 ];

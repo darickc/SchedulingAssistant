@@ -32,9 +32,9 @@ const AppointmentDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const [loading, setLoading] = useState(false);
   
   const appointment = appointments.find(a => a.id === appointmentId);
-  const contact = appointment ? contacts.find(c => c.id === appointment.contact_id) : null;
-  const leader = appointment ? leaders.find(l => l.id === appointment.leader_id) : null;
-  const appointmentType = appointment ? appointmentTypes.find(t => t.id === appointment.type_id) : null;
+  const contact = appointment ? contacts.find(c => c.id === appointment.contactId) : null;
+  const leader = appointment ? leaders.find(l => l.id === appointment.leaderId) : null;
+  const appointmentType = appointment ? appointmentTypes.find(t => t.id === appointment.typeId) : null;
   
   if (!appointment || !contact || !leader || !appointmentType) {
     return (

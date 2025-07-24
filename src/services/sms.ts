@@ -36,7 +36,7 @@ export class SMSService {
     leader: Leader,
     appointmentType: AppointmentType
   ): MessageVariables {
-    const date = new Date(appointment.scheduled_time);
+    const date = new Date(appointment.scheduledTime);
     
     return {
       name: contact.name,
@@ -45,7 +45,7 @@ export class SMSService {
       day: date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
       date: date.toLocaleDateString(),
       time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-      duration: `${appointmentType.duration_minutes} minutes`,
+      duration: `${appointmentType.durationMinutes} minutes`,
       type: appointmentType.name,
       location: 'Church' // You can make this configurable later
     };

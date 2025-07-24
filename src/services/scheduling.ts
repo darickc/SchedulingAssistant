@@ -31,7 +31,7 @@ export class SchedulingService {
     
     // Get busy times from Google Calendar
     const busyTimes = await GoogleCalendarService.getFreeBusy(
-      leader.calendar_id,
+      leader.calendarId,
       dateRange.start,
       dateRange.end
     );
@@ -77,7 +77,7 @@ export class SchedulingService {
     const availableSlots = await this.findAvailableSlots(
       leaderId,
       leader,
-      appointmentType.duration_minutes,
+      appointmentType.durationMinutes,
       dateRange,
       preferences
     );
@@ -227,7 +227,7 @@ export class SchedulingService {
     const checkEnd = new Date(end.getTime() + bufferTime * 60 * 1000);
     
     const busyTimes = await GoogleCalendarService.getFreeBusy(
-      leader.calendar_id,
+      leader.calendarId,
       checkStart,
       checkEnd
     );
