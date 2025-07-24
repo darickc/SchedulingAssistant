@@ -17,12 +17,10 @@ import SettingsScreen from '@/screens/SettingsScreen';
 import ContactDetailsScreen from '@/screens/ContactDetailsScreen';
 import AddEditContactScreen from '@/screens/AddEditContactScreen';
 import ScheduleAppointmentScreen from '@/screens/ScheduleAppointmentScreen';
-
-// Placeholder screens (to be implemented)
-const AppointmentDetailsScreen = () => null;
-const LeaderManagementScreen = () => null;
-const TemplateManagementScreen = () => null;
-const AppointmentTypeManagementScreen = () => null;
+import LeaderManagementScreen from '@/screens/LeaderManagementScreen';
+import TemplateManagementScreen from '@/screens/TemplateManagementScreen';
+import AppointmentTypeManagementScreen from '@/screens/AppointmentTypeManagementScreen';
+import AppointmentDetailsScreen from '@/screens/AppointmentDetailsScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
