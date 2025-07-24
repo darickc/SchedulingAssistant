@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar } from 'react-native-calendars';
+import { useFocusEffect } from '@react-navigation/native';
 import { MainTabScreenProps } from '@/types/navigation';
-import { Appointment } from '@/types';
+import { Appointment, AppointmentWithDetails } from '@/types';
 import { Colors, Spacing, FontSizes } from '@/constants';
+import { useAppointmentStore } from '@/stores/appointmentStore';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 type Props = MainTabScreenProps<'Schedule'>;
@@ -12,7 +14,16 @@ type Props = MainTabScreenProps<'Schedule'>;
 const ScheduleScreen: React.FC<Props> = ({ navigation }) => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [showCalendarView, setShowCalendarView] = useState(true);
-  const [appointments] = useState<Appointment[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  const {
+    appointmentsWithDetails,
+    loading,
+    error,
+    loadAppointments,
+    getAppointmentsForDate,
+    clearError
+  } = useAppointmentStore();
 
   const handleScheduleNew = () => {
     navigation.navigate('ScheduleAppointment', {});
@@ -22,22 +33,53 @@ const ScheduleScreen: React.FC<Props> = ({ navigation }) => {
     navigation.navigate('AppointmentDetails', { appointmentId });
   };
 
-  const renderAppointment = ({ item }: { item: Appointment }) => (
+  const loadData = useCallback(async () => {
+    try {
+      await loadAppointments();
+    } catch (error) {
+      console.error('Failed to load appointments:', error);
+    }
+  }, [loadAppointments]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  }, [loadData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
+
+  // Show error alerts
+  useEffect(() => {
+    if (error) {
+      Alert.alert('Error', error, [
+        { text: 'OK', onPress: clearError }
+      ]);
+    }
+  }, [error, clearError]);
+
+  const renderAppointment = ({ item }: { item: AppointmentWithDetails }) => (
     <TouchableOpacity
       style={styles.appointmentItem}
       onPress={() => handleAppointmentPress(item.id)}
     >
       <View style={styles.appointmentTime}>
         <Text style={styles.timeText}>
-          {new Date(item.scheduledTime).toLocaleTimeString([], {
+          {item.scheduledTime.toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit',
           })}
         </Text>
       </View>
       <View style={styles.appointmentInfo}>
-        <Text style={styles.appointmentTitle}>Contact Name</Text>
-        <Text style={styles.appointmentSubtitle}>Type • Leader Name</Text>
+        <Text style={styles.appointmentTitle}>{item.contact.name}</Text>
+        <Text style={styles.appointmentSubtitle}>
+          {item.appointmentType.name} • {item.leader.name}
+        </Text>
       </View>
       <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
         <Text style={styles.statusText}>{item.status}</Text>
@@ -60,8 +102,8 @@ const ScheduleScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const markedDates = appointments.reduce((acc, apt) => {
-    const date = new Date(apt.scheduledTime).toISOString().split('T')[0];
+  const markedDates = appointmentsWithDetails.reduce((acc, apt) => {
+    const date = apt.scheduledTime.toISOString().split('T')[0];
     acc[date] = { marked: true, dotColor: Colors.primary };
     return acc;
   }, {} as Record<string, { marked?: boolean; dotColor?: string; selected?: boolean; selectedColor?: string }>);
@@ -119,22 +161,44 @@ const ScheduleScreen: React.FC<Props> = ({ navigation }) => {
           })}
         </Text>
         
-        {appointments.filter(apt => 
-          new Date(apt.scheduledTime).toISOString().split('T')[0] === selectedDate
-        ).length === 0 ? (
-          <View style={styles.emptyState}>
-            <Icon name="calendar-outline" size={48} color={Colors.gray} />
-            <Text style={styles.emptyStateText}>No appointments scheduled</Text>
+        {loading && appointmentsWithDetails.length === 0 ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+            <Text style={styles.loadingText}>Loading appointments...</Text>
           </View>
         ) : (
-          <FlatList
-            data={appointments.filter(apt => 
-              new Date(apt.scheduledTime).toISOString().split('T')[0] === selectedDate
-            )}
-            renderItem={renderAppointment}
-            keyExtractor={(item) => item.id.toString()}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-          />
+          (() => {
+            const dayAppointments = getAppointmentsForDate(new Date(selectedDate));
+            
+            if (dayAppointments.length === 0) {
+              return (
+                <View style={styles.emptyState}>
+                  <Icon name="calendar-outline" size={48} color={Colors.gray} />
+                  <Text style={styles.emptyStateText}>No appointments scheduled</Text>
+                  <TouchableOpacity style={styles.scheduleButton} onPress={handleScheduleNew}>
+                    <Text style={styles.scheduleButtonText}>Schedule Appointment</Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            }
+            
+            return (
+              <FlatList
+                data={dayAppointments}
+                renderItem={renderAppointment}
+                keyExtractor={(item) => item.id.toString()}
+                ItemSeparatorComponent={() => <View style={styles.separator} />}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    colors={[Colors.primary]}
+                    tintColor={Colors.primary}
+                  />
+                }
+              />
+            );
+          })()
         )}
       </View>
     </SafeAreaView>
@@ -233,6 +297,29 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xl,
   },
   emptyStateText: {
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  scheduleButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: 8,
+  },
+  scheduleButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.xl,
+  },
+  loadingText: {
     fontSize: FontSizes.md,
     color: Colors.textSecondary,
     marginTop: Spacing.sm,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Alert,
   ActivityIndicator,
   SectionList,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Menu, MenuTrigger, MenuOptions, MenuOption, MenuProvider } from 'react-native-popup-menu';
@@ -35,6 +36,7 @@ const ContactsScreen: React.FC<Props> = ({ navigation }) => {
   const [isImporting, setIsImporting] = useState(false);
   const [showImportPreview, setShowImportPreview] = useState(false);
   const [pendingImportResult, setPendingImportResult] = useState<ContactImportResult | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   
   const { 
     contacts, 
@@ -51,6 +53,12 @@ const ContactsScreen: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
     loadContacts();
   }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadContacts();
+    setRefreshing(false);
+  }, [loadContacts]);
 
   // Update store search query
   useEffect(() => {
@@ -263,6 +271,14 @@ const ContactsScreen: React.FC<Props> = ({ navigation }) => {
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             contentContainerStyle={styles.listContent}
             stickySectionHeadersEnabled={true}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={[Colors.primary]}
+                tintColor={Colors.primary}
+              />
+            }
           />
         )}
         

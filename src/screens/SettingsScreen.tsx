@@ -71,10 +71,8 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
         {
           title: 'Import Contacts',
           icon: 'download',
-          onPress: () => {
-            // TODO: Implement import functionality
-            Alert.alert('Import', 'Import contacts from CSV');
-          },
+          onPress: () => navigation.navigate('Contacts'),
+          showArrow: true,
         },
         {
           title: 'Export Data',
