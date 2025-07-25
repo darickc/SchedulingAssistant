@@ -1,4 +1,4 @@
-import * as Google from 'expo-auth-session/providers/google';
+import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
@@ -57,27 +57,91 @@ export class AuthService {
    */
   static async signIn(): Promise<GoogleUser> {
     try {
-      const request = new Google.GoogleAuthRequest({
-        clientId: this.getClientId(),
-        scopes: [
-          'openid',
-          'profile',
-          'email',
-          'https://www.googleapis.com/auth/calendar',
-          'https://www.googleapis.com/auth/calendar.events',
-        ],
+      // Always use proxy for Expo Go development
+      const redirectUri = AuthSession.makeRedirectUri({
+        useProxy: true,
+      });
+      
+      console.log('Generated redirect URI:', redirectUri);
+
+      // Get client ID
+      const clientId = this.getClientId();
+      console.log('Using client ID:', clientId);
+      
+      // Generate a random state for security
+      const state = Math.random().toString(36).substring(7);
+      
+      // Build the auth URL manually for better control
+      const authUrl = 
+        `https://accounts.google.com/o/oauth2/v2/auth?` +
+        `client_id=${clientId}` +
+        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+        `&response_type=code` +
+        `&scope=${encodeURIComponent('openid profile email https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events')}` +
+        `&prompt=select_account` +
+        `&access_type=offline` +
+        `&state=${state}`;
+
+      console.log('Opening auth URL...');
+      
+      // Open the auth session
+      const result = await AuthSession.startAsync({
+        authUrl,
+        returnUrl: redirectUri,
       });
 
-      const result = await request.promptAsync();
+      console.log('Auth result:', result.type);
+      if (result.type === 'error') {
+        console.error('Auth error:', result);
+        throw new Error(`Authentication error: ${result.errorCode}`);
+      }
+      
+      if (result.type === 'success' && result.params) {
+        console.log('Auth success, params:', Object.keys(result.params));
+        
+        let accessToken: string | undefined;
+        let refreshToken: string | undefined;
+        let expiresIn: number | undefined;
 
-      if (result.type === 'success' && result.authentication) {
-        const { accessToken, refreshToken, expiresIn } = result.authentication;
+        // Handle authorization code response
+        if (result.params.code) {
+          console.log('Exchanging authorization code for tokens...');
+          
+          // Exchange code for tokens
+          const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+              code: result.params.code,
+              client_id: clientId,
+              redirect_uri: redirectUri,
+              grant_type: 'authorization_code',
+            }).toString(),
+          });
+
+          if (!tokenResponse.ok) {
+            const errorText = await tokenResponse.text();
+            console.error('Token exchange failed:', errorText);
+            throw new Error('Failed to exchange authorization code for tokens');
+          }
+
+          const tokenData = await tokenResponse.json();
+          accessToken = tokenData.access_token;
+          refreshToken = tokenData.refresh_token;
+          expiresIn = tokenData.expires_in;
+        }
+
+        if (!accessToken) {
+          throw new Error('No access token received');
+        }
 
         // Store tokens
         await this.storeTokens({
           accessToken,
           refreshToken: refreshToken || undefined,
-          expiresIn: expiresIn ? parseInt(expiresIn) : undefined,
+          expiresIn,
         });
 
         // Fetch user info
@@ -277,16 +341,18 @@ export class AuthService {
 
   /**
    * Get the appropriate client ID based on platform
+   * For Expo Go development, always use web client ID with auth proxy
    */
   private static getClientId(): string {
-    if (Platform.OS === 'ios' && this.config.iosClientId) {
-      return this.config.iosClientId;
-    } else if (Platform.OS === 'android' && this.config.androidClientId) {
-      return this.config.androidClientId;
-    } else if (this.config.webClientId) {
+    // For Expo Go development, always use web client ID
+    if (this.config.webClientId) {
       return this.config.webClientId;
     } else if (this.config.expoClientId) {
       return this.config.expoClientId;
+    } else if (Platform.OS === 'ios' && this.config.iosClientId) {
+      return this.config.iosClientId;
+    } else if (Platform.OS === 'android' && this.config.androidClientId) {
+      return this.config.androidClientId;
     }
     
     throw new Error('No client ID configured for current platform');

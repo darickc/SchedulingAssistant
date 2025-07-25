@@ -15,8 +15,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Calendar } from 'react-native-calendars';
 import { RootStackScreenProps } from '@/types/navigation';
 import { Colors, FontSizes } from '@/constants';
-import { useContactsStore } from '@/stores/contactStore';
-import { useAppointmentsStore } from '@/stores/appointmentStore';
+import { useContactStore } from '@/stores/contactStore';
+import { useAppointmentStore } from '@/stores/appointmentStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { SchedulingService } from '@/services/scheduling';
 import { SMSService } from '@/services/sms';
@@ -29,8 +29,8 @@ const ScheduleAppointmentScreen: React.FC<Props> = ({ route, navigation }) => {
   const { contactId } = route.params;
   
   // Store hooks
-  const { contacts } = useContactsStore();
-  const { addAppointment } = useAppointmentsStore();
+  const { contacts } = useContactStore();
+  const { createAppointment, updateAppointment } = useAppointmentStore();
   const { leaders, appointmentTypes, messageTemplates } = useSettingsStore();
   
   // State
@@ -121,7 +121,7 @@ const ScheduleAppointmentScreen: React.FC<Props> = ({ route, navigation }) => {
     setLoading(true);
     try {
       // Create appointment in local database
-      const appointment = await addAppointment({
+      const appointment = await createAppointment({
         contactId: contact.id!,
         leaderId: selectedLeader.id!,
         typeId: selectedType.id!,
@@ -144,8 +144,7 @@ const ScheduleAppointmentScreen: React.FC<Props> = ({ route, navigation }) => {
 
         // Update appointment with Google event ID
         if (event.id && appointment.id) {
-          await addAppointment({
-            ...appointment,
+          await updateAppointment(appointment.id, {
             googleEventId: event.id,
           });
         }

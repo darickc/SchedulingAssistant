@@ -178,7 +178,7 @@ export default function TemplateManagementScreen({ navigation }: any) {
       <ScrollView>
         {messageTemplates.map((template, index) => (
           <ListItem
-            key={template.id || index}
+            key={template.id ? `template-${template.id}` : `temp-${index}`}
             bottomDivider
             onPress={() => handleEdit(template)}
           >
@@ -268,14 +268,15 @@ export default function TemplateManagementScreen({ navigation }: any) {
                 Tap to insert variables into your template
               </Text>
               <View style={styles.variableChips}>
-                {availableVariables.map((variable) => (
-                  <Chip
-                    key={variable.key}
-                    title={`{${variable.key}}`}
-                    onPress={() => insertVariable(variable.key)}
-                    buttonStyle={styles.variableChip}
-                    titleStyle={styles.variableChipText}
-                  />
+                {availableVariables.map((variable, index) => (
+                  <View key={`chip-wrapper-${variable.key}-${index}`}>
+                    <Chip
+                      title={`{${variable.key}}`}
+                      onPress={() => insertVariable(variable.key)}
+                      buttonStyle={styles.variableChip}
+                      titleStyle={styles.variableChipText}
+                    />
+                  </View>
                 ))}
               </View>
             </View>
@@ -283,8 +284,8 @@ export default function TemplateManagementScreen({ navigation }: any) {
             <Card>
               <Card.Title>Variable Descriptions</Card.Title>
               <Card.Divider />
-              {availableVariables.map((variable) => (
-                <View key={variable.key} style={styles.variableDescription}>
+              {availableVariables.map((variable, index) => (
+                <View key={`desc-${variable.key}-${index}`} style={styles.variableDescription}>
                   <Text style={styles.variableKey}>{`{${variable.key}}`}</Text>
                   <Text style={styles.variableDesc}>{variable.description}</Text>
                 </View>
@@ -365,12 +366,12 @@ const styles = StyleSheet.create({
   variableChips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
   },
   variableChip: {
     backgroundColor: '#007AFF',
     paddingHorizontal: 12,
     paddingVertical: 6,
+    marginRight: 8,
     marginBottom: 8,
   },
   variableChipText: {

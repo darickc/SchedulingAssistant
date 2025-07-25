@@ -6,6 +6,8 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "scheme": "com.schedulingassistant.app",
+    "owner": "darick_c",
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#007AFF"
@@ -29,6 +31,7 @@
       ]
     },
     "web": {
+      "bundler": "metro"
     },
     "plugins": [
       "expo-sqlite"

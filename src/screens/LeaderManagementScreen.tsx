@@ -15,7 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { CalendarService, Calendar } from '../services/googleCalendar';
 import { Leader } from '../types';
 
-export const LeaderManagementScreen: React.FC = () => {
+const LeaderManagementScreen: React.FC = () => {
   const { leaders, addLeader, updateLeader, deleteLeader } = useSettingsStore();
   const { isSignedIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -432,3 +432,5 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 });
+
+export default LeaderManagementScreen;

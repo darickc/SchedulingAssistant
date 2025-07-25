@@ -159,7 +159,7 @@ export default function AppointmentTypeManagementScreen({ navigation }: any) {
       <ScrollView>
         {appointmentTypes.map((type, index) => (
           <ListItem
-            key={type.id || index}
+            key={type.id ? `type-${type.id}` : `temp-${index}`}
             bottomDivider
             onPress={() => handleEdit(type)}
           >
@@ -242,17 +242,17 @@ export default function AppointmentTypeManagementScreen({ navigation }: any) {
                 minimumTrackTintColor="#007AFF"
               />
               <View style={styles.durationLabels}>
-                <Text style={styles.durationLabel}>5 min</Text>
-                <Text style={styles.durationLabel}>120 min</Text>
+                <Text key="duration-min" style={styles.durationLabel}>5 min</Text>
+                <Text key="duration-max" style={styles.durationLabel}>120 min</Text>
               </View>
             </View>
 
             <View style={styles.colorSection}>
               <Text style={styles.label}>Color</Text>
               <View style={styles.colorGrid}>
-                {colors.map((colorOption) => (
+                {colors.map((colorOption, index) => (
                   <TouchableOpacity
-                    key={colorOption}
+                    key={`color-${colorOption}-${index}`}
                     style={[
                       styles.colorOption,
                       { backgroundColor: colorOption },
